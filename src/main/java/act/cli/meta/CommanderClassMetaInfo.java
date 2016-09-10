@@ -146,10 +146,6 @@ public class CommanderClassMetaInfo extends DestroyableBase {
         return this;
     }
 
-    public boolean isAbstract() {
-        return isAbstract;
-    }
-
     public CommanderClassMetaInfo addCommand(CommandMethodMetaInfo info) {
         commands.add(info);
         return this;

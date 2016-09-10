@@ -98,10 +98,6 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         return this;
     }
 
-    public boolean isAbstract() {
-        return isAbstract;
-    }
-
     public boolean isController() {
         return isController;
     }

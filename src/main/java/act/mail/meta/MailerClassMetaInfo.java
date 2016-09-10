@@ -68,10 +68,6 @@ public final class MailerClassMetaInfo extends DestroyableBase {
         return this;
     }
 
-    public boolean isAbstract() {
-        return isAbstract;
-    }
-
     public boolean isMailer() {
         return isMailer;
     }
