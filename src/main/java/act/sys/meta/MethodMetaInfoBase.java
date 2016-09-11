@@ -5,7 +5,7 @@ import act.util.DestroyableBase;
 /**
  * Base class for storing method meta info
  */
-public class MethodMetaInfoBase<T extends ClassMetaInfoBase, M extends MethodMetaInfoBase> extends DestroyableBase {
+public class MethodMetaInfoBase<T extends ClassMetaInfo, M extends MethodMetaInfoBase> extends DestroyableBase {
     /**
      * The method name
      */
