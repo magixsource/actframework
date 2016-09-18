@@ -30,7 +30,7 @@ public abstract class RequestBodyParser {
         return parser;
     }
 
-    public abstract Map<String, String[]> parse(ActionContext context);
+    public abstract Map<String, CharSequence[]> parse(ActionContext context);
 
 }
 

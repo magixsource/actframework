@@ -550,10 +550,10 @@ public class ApacheMultipartParser extends RequestBodyParser {
     }
 
     @Override
-    public Map<String, String[]> parse(ActionContext context) {
+    public Map<String, CharSequence[]> parse(ActionContext context) {
         H.Request request = context.req();
         InputStream body = request.inputStream();
-        Map<String, String[]> result = new HashMap<String, String[]>();
+        Map<String, CharSequence[]> result = new HashMap<String, CharSequence[]>();
         try {
             FileItemIteratorImpl iter = new FileItemIteratorImpl(body, request.header("content-type"), request.characterEncoding());
             while (iter.hasNext()) {

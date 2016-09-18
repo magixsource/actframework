@@ -7,6 +7,7 @@ import org.osgl.http.H;
 import org.osgl.mvc.result.ErrorResult;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
+import org.osgl.util.FastStr;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -20,13 +21,13 @@ public class UrlEncodedParser extends RequestBodyParser {
     boolean forQueryString = false;
 
     @Override
-    public Map<String, String[]> parse(ActionContext context) {
+    public Map<String, CharSequence[]> parse(ActionContext context) {
         H.Request request = context.req();
         // Encoding is either retrieved from contentType or it is the default encoding
         final String encoding = request.characterEncoding();
         InputStream is = request.inputStream();
         try {
-            Map<String, String[]> params = new LinkedHashMap<String, String[]>();
+            Map<CharSequence, CharSequence[]> params = new LinkedHashMap<CharSequence, CharSequence[]>();
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
             int bytesRead;
@@ -34,10 +35,10 @@ public class UrlEncodedParser extends RequestBodyParser {
                 os.write(buffer, 0, bytesRead);
             }
 
-            String data = new String(os.toByteArray(), encoding);
+            FastStr data = FastStr.of(os.toByteArray(), encoding);
             if (data.length() == 0) {
                 //data is empty - can skip the rest
-                return new HashMap<String, String[]>(0);
+                return new HashMap<String, CharSequence[]>(0);
             }
 
             // check if data is in JSON format
@@ -57,24 +58,24 @@ public class UrlEncodedParser extends RequestBodyParser {
             //
             // NB: _charset_ must always be used with accept-charset and it must have the same value
 
-            String[] keyValues = data.split("&");
+            C.List<FastStr> keyValues = data.split("&");
 
             int httpMaxParams = context.app().config().httpMaxParams();
             // to prevent the server from being vulnerable to POST hash collision DOS-attack (Denial of Service through hash table multi-collisions),
             // we should by default not lookup the params into HashMap if the count exceeds a maximum limit
-            if (httpMaxParams != 0 && keyValues.length > httpMaxParams) {
+            if (httpMaxParams != 0 && keyValues.size() > httpMaxParams) {
                 logger.warn("Number of request parameters %d is higher than maximum of %d, aborting. Can be configured using 'act.http.params.max'", keyValues.length, httpMaxParams);
                 throw new ErrorResult(H.Status.valueOf(413)); //413 Request Entity Too Large
             }
 
-            for (String keyValue : keyValues) {
+            for (FastStr keyValue : keyValues) {
                 // split this key-value on the first '='
                 int i = keyValue.indexOf('=');
-                String key = null;
-                String value = null;
+                FastStr key;
+                FastStr value = null;
                 if (i > 0) {
-                    key = keyValue.substring(0, i);
-                    value = keyValue.substring(i + 1);
+                    key = keyValue.substr(0, i).copy();
+                    value = keyValue.substr(i + 1).copy();
                 } else {
                     key = keyValue;
                 }
@@ -84,16 +85,16 @@ public class UrlEncodedParser extends RequestBodyParser {
             }
 
             // Second phase - look for _charset_ param and do the encoding
-            String charset = encoding;
+            CharSequence charset = encoding;
             if (params.containsKey("_charset_")) {
                 // The form contains a _charset_ param - When this is used together
                 // with accept-charset, we can use _charset_ to extract the encoding.
                 // PS: When rendering the view/form, _charset_ and accept-charset must be given the
                 // same value - since only Firefox and sometimes IE actually sets it when Posting
-                String providedCharset = params.get("_charset_")[0];
+                CharSequence providedCharset = params.get("_charset_")[0];
                 // Must be sure the providedCharset is a valid encoding..
                 try {
-                    "test".getBytes(providedCharset);
+                    "test".getBytes(providedCharset.toString());
                     charset = providedCharset; // it works..
                 } catch (Exception e) {
                     logger.debug("Got invalid _charset_ in form: " + providedCharset);
@@ -102,18 +103,19 @@ public class UrlEncodedParser extends RequestBodyParser {
             }
 
             // We're ready to decode the params
-            Map<String, String[]> decodedParams = new LinkedHashMap<String, String[]>(params.size());
+            Map<CharSequence, CharSequence[]> decodedParams = new LinkedHashMap<CharSequence, CharSequence[]>(params.size());
             URLCodec codec = new URLCodec();
-            for (Map.Entry<String, String[]> e : params.entrySet()) {
-                String key = e.getKey();
+            String charsetStr = charset.toString();
+            for (Map.Entry<CharSequence, CharSequence[]> e : params.entrySet()) {
+                CharSequence key = e.getKey();
                 try {
-                    key = codec.decode(e.getKey(), charset);
+                    key = codec.decode(e.getKey().toString(), charsetStr);
                 } catch (Throwable z) {
                     // Nothing we can do about, ignore
                 }
-                for (String value : e.getValue()) {
+                for (CharSequence value : e.getValue()) {
                     try {
-                        MapUtil.mergeValueInMap(decodedParams, key, (value == null ? null : codec.decode(value, charset)));
+                        MapUtil.mergeValueInMap(decodedParams, key, (value == null ? null : codec.decode(value.toString(), charsetStr)));
                     } catch (Throwable z) {
                         // Nothing we can do about, lets fill in with the non decoded value
                         MapUtil.mergeValueInMap(decodedParams, key, value);
