@@ -1,0 +1,6 @@
+FROM openjdk:8-jre-alpine
+
+ADD app.jar /opt/app/
+EXPOSE 6540
+WORKDIR /opt/app/
+CMD ["java", "-Xms512m", "-Xmx1g", "-jar", "app.jar"]
