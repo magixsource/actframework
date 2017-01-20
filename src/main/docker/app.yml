@@ -1,0 +1,12 @@
+version: '2'
+services:
+    act-app:
+        image: act-app
+        external_links:
+            - act-mysql:mysql
+        ports:
+            - 5460:5460
+    act-mysql:
+        extends:
+            file: mysql.yml
+            service: act-mysql
