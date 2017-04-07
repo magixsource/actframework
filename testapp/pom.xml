@@ -76,6 +76,76 @@
         <filtering>true</filtering>
       </resource>
     </resources>
+    <plugins>
+    	<!-- Copy Dockerfile -->
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/docker/</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/docker</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.coderplus.maven.plugins</groupId>
+				<artifactId>copy-rename-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>rename-file</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>rename</goal>
+						</goals>
+						<configuration>
+							<sourceFile>${basedir}/target/docker/Dockerfile.txt</sourceFile>
+							<destinationFile>${basedir}/target/docker/Dockerfile</destinationFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<!-- Add docker maven plugin -->
+			<plugin>
+	        	<groupId>com.spotify</groupId>
+	        	<artifactId>docker-maven-plugin</artifactId>
+	        	<version>0.4.13</version>
+	        	<executions>
+	        		<execution>
+		        		<phase>package</phase>
+		        		<goals>
+		        			<goal>build</goal>
+		        		</goals>
+	        		</execution>
+	        	</executions>
+	        	<configuration>
+	        		<dockerDirectory>src/main/docker</dockerDirectory>
+	        		<imageName>${project.artifactId}</imageName>
+	        		<pushImage>false</pushImage>
+	        		<resources>
+				      <resource>
+				      <!-- '/' works on *UNIX -->
+				      	<targetPath>.</targetPath>
+				      	<directory>${project.build.directory}</directory>
+				      	<include>${project.build.finalName}.jar</include>
+				      </resource>
+	        		</resources>
+	        	</configuration>
+	        </plugin>
+    </plugins>
 
     <pluginManagement>
       <plugins>
@@ -158,75 +228,6 @@
           </execution>
         </executions>
       </plugin>
-      
-      <!-- Copy Dockerfile -->
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-resources</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${basedir}/target/docker/</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/docker</directory>
-									<filtering>true</filtering>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>com.coderplus.maven.plugins</groupId>
-				<artifactId>copy-rename-maven-plugin</artifactId>
-				<version>1.0</version>
-				<executions>
-					<execution>
-						<id>rename-file</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>rename</goal>
-						</goals>
-						<configuration>
-							<sourceFile>${basedir}/target/docker/Dockerfile.txt</sourceFile>
-							<destinationFile>${basedir}/target/docker/Dockerfile</destinationFile>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			
-			<!-- Add docker maven plugin -->
-			<plugin>
-	        	<groupId>com.spotify</groupId>
-	        	<artifactId>docker-maven-plugin</artifactId>
-	        	<version>0.4.13</version>
-	        	<executions>
-	        		<execution>
-		        		<phase>package</phase>
-		        		<goals>
-		        			<goal>build</goal>
-		        		</goals>
-	        		</execution>
-	        	</executions>
-	        	<configuration>
-	        		<dockerDirectory>src/main/docker</dockerDirectory>
-	        		<imageName>${project.artifactId}</imageName>
-	        		<pushImage>false</pushImage>
-	        		<resources>
-				      <resource>
-				      <!-- '/' works on *UNIX -->
-				      	<targetPath>.</targetPath>
-				      	<directory>${project.build.directory}</directory>
-				      	<include>${project.build.finalName}.jar</include>
-				      </resource>
-	        		</resources>
-	        	</configuration>
-	        </plugin>
     </plugins>
   </build>
 
