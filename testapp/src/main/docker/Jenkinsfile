@@ -19,7 +19,7 @@ node {
    	echo '======================'
    	echo 'begin packaging by maven'
     // docker:build will connect localhost:2375
-    sh "${mvnHome}/bin/mvn -Dmaven.test.failure.ignore clean package docker:build -DskipDockerPush -DdockerImageTags=latest -DdockerImageTags=$BUILD_NUMBER"
+    sh "${mvnHome}/bin/mvn -Dmaven.test.failure.ignore clean package com.spotify:docker-maven-plugin:0.4.13:build -DskipDockerPush -DdockerImageTags=latest -DdockerImageTags=$BUILD_NUMBER"
    	echo 'packaging completed'
    }
    
