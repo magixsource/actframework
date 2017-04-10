@@ -19,8 +19,11 @@ node {
    	echo '======================'
    	echo 'begin packaging by maven'
     // docker:build will connect localhost:2375
-    sh "${mvnHome}/bin/mvn -Dmaven.test.failure.ignore clean package com.spotify:docker-maven-plugin:0.4.13:build -DskipDockerPush -DdockerImageTags=latest -DdockerImageTags=$BUILD_NUMBER"
-   	echo 'packaging completed'
+
+    dir('/home/ubuntu/.jenkins/workspace/testapp/testapp/') {
+		sh "${mvnHome}/bin/mvn -Dmaven.test.failure.ignore clean package com.spotify:docker-maven-plugin:0.4.13:build -DskipDockerPush -DdockerImageTags=latest -DdockerImageTags=$BUILD_NUMBER"
+	}
+    echo 'packaging completed'
    }
    
    stage('Stop testapp-server') {
@@ -61,7 +64,7 @@ node {
      stage('Copy docker-compose.yml file') {
     	echo '======================'
         echo 'cp docker-compose.yml to here'
-        sh "cp ~/.jenkins/workspace/testapp/target/docker/app.yml ~/docker/sandbox/testapp/"
+        sh "cp ~/.jenkins/workspace/testapp/testapp/target/docker/app.yml ~/docker/sandbox/testapp/"
         echo 'cp docker-compose.yml success !'
      }
         
